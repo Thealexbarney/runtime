@@ -113,7 +113,7 @@ namespace System.IO.Enumeration
                             return false;
 
                         FileAttributes attributes = FileSystemEntry.Initialize(
-                            ref entry, _entry, _currentPath, _rootDirectory, _originalRootDirectory, new Span<char>(_pathBuffer));
+                            ref entry, _entry, _currentPath, _rootDirectory, _originalRootDirectory, new Span<char>(_pathBuffer), _options.UseExtendedAttributes);
                         bool isDirectory = (attributes & FileAttributes.Directory) != 0;
 
                         bool isSpecialDirectory = false;

@@ -12,7 +12,7 @@ namespace System.IO
 
         protected FileSystemInfo()
         {
-            FileStatus.Initialize(ref _fileStatus, this is DirectoryInfo);
+            FileStatus.Initialize(ref _fileStatus, this is DirectoryInfo, useFatAttributes: false);
         }
 
         internal static unsafe FileSystemInfo Create(string fullPath, string fileName, ref FileStatus fileStatus)

@@ -25,7 +25,8 @@ namespace System.IO.Enumeration
             ReadOnlySpan<char> directory,
             ReadOnlySpan<char> rootDirectory,
             ReadOnlySpan<char> originalRootDirectory,
-            Span<char> pathBuffer)
+            Span<char> pathBuffer,
+            bool useFatAttributes)
         {
             entry._directoryEntry = directoryEntry;
             entry.Directory = directory;
@@ -67,7 +68,7 @@ namespace System.IO.Enumeration
             }
 
             entry._status = default;
-            FileStatus.Initialize(ref entry._status, isDirectory);
+            FileStatus.Initialize(ref entry._status, isDirectory, useFatAttributes);
 
             FileAttributes attributes = default;
             if (isSymlink)
@@ -76,6 +77,11 @@ namespace System.IO.Enumeration
                 attributes |= FileAttributes.Directory;
             if (directoryEntry.Name[0] == '.')
                 attributes |= FileAttributes.Hidden;
+
+            if (useFatAttributes)
+            {
+                attributes |= FileSystem.GetFatAttributes(entry.ToFullPath());
+            }
 
             if (attributes == default)
                 attributes = FileAttributes.Normal;

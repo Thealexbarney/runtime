@@ -101,5 +101,10 @@ namespace System.IO
         /// Set to true to return "." and ".." directory entries.
         /// </summary>
         public bool ReturnSpecialDirectories { get; set; }
+
+        /// <summary>
+        /// Set to true to read FAT attributes on Unix.
+        /// </summary>
+        public bool UseExtendedAttributes { get; set; }
     }
 }

@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace System.IO
 {
@@ -11,6 +14,10 @@ namespace System.IO
     internal static partial class FileSystem
     {
         internal const int DefaultBufferSize = 4096;
+
+        private const FileAttributes ValidFatFlags =
+                FileAttributes.ReadOnly | FileAttributes.Hidden | FileAttributes.System |
+                FileAttributes.Directory | FileAttributes.Archive;
 
         public static void CopyFile(string sourceFullPath, string destFullPath, bool overwrite)
         {
@@ -499,9 +506,25 @@ namespace System.IO
             return attributes;
         }
 
+        public static FileAttributes GetFatAttributes(string fullPath)
+        {
+            using (SafeFileHandle fd = Interop.Sys.Open(fullPath.ToString(), Interop.Sys.OpenFlags.O_RDONLY, 0))
+            {
+                return (FileAttributes)Interop.Sys.GetFatAttr(fd) & ValidFatFlags;
+            }
+        }
+
         public static void SetAttributes(string fullPath, FileAttributes attributes)
         {
             new FileInfo(fullPath, null).Attributes = attributes;
+        }
+
+        public static void SetFatAttributes(string fullPath, FileAttributes attributes)
+        {
+            using (SafeFileHandle fd = Interop.Sys.Open(fullPath, Interop.Sys.OpenFlags.O_RDONLY, 0))
+            {
+                Interop.Sys.SetFatAttr(fd, attributes & ValidFatFlags);
+            }
         }
 
         public static DateTimeOffset GetCreationTime(string fullPath)

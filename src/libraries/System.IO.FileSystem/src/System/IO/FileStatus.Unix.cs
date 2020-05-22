@@ -27,11 +27,16 @@ namespace System.IO
         // Exists as of the last refresh
         private bool _exists;
 
+        // Should we read and write FAT attributes
+        private bool _useFatAttributes;
+
         internal static void Initialize(
             ref FileStatus status,
-            bool isDirectory)
+            bool isDirectory,
+            bool useFatAttributes)
         {
             status.InitiallyDirectory = isDirectory;
+            status._useFatAttributes = useFatAttributes;
             status._fileStatusInitialized = -1;
         }
 
@@ -88,6 +93,11 @@ namespace System.IO
             if (fileName.Length > 0 && (fileName[0] == '.' || (_fileStatus.UserFlags & (uint)Interop.Sys.UserFlags.UF_HIDDEN) == (uint)Interop.Sys.UserFlags.UF_HIDDEN))
                 attributes |= FileAttributes.Hidden;
 
+            if (_useFatAttributes)
+            {
+                attributes |= FileSystem.GetFatAttributes(path.ToString());
+            }
+
             return attributes != default ? attributes : FileAttributes.Normal;
         }
 
@@ -112,6 +122,11 @@ namespace System.IO
 
             if (!_exists)
                 FileSystemInfo.ThrowNotFound(path);
+
+            if (_useFatAttributes)
+            {
+                FileSystem.SetFatAttributes(path, attributes);
+            }
 
             if (Interop.Sys.CanSetHiddenFlag)
             {
